@@ -1,0 +1,17 @@
+# Build output
+build/
+dist/
+*.zip
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Web Store signing key — never commit this
+*.pem

@@ -1,0 +1,69 @@
+# Packs the extension into next-color-picker-<version>.zip.
+#
+# Every run uploads the package as a workflow artifact. Pushing a v<version> tag
+# also publishes it as a GitHub release; the tag must match the manifest version.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read version
+        id: manifest
+        run: echo "version=$(jq -r .version manifest.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag against manifest
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest version $VERSION"
+            exit 1
+          fi
+
+      - name: Minify
+        run: |
+          mkdir -p build
+          jq -c . manifest.json > build/manifest.json
+          cp -r icons LICENSE build/
+          for script in background.js picker.js; do
+            npx --yes terser@5.36.0 "$script" --compress --mangle --output "build/$script"
+          done
+
+      - name: Pack
+        env:
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          mkdir -p dist
+          cd build
+          zip -r -X -9 "../dist/next-color-picker-$VERSION.zip" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: next-color-picker-${{ steps.manifest.outputs.version }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "$GITHUB_REF_NAME" --generate-notes
