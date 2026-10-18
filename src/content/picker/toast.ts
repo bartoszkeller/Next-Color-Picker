@@ -1,7 +1,9 @@
+import type { Theme } from '../../shared/settings';
+import themeCss from '../../shared/styles/theme.css';
+import { applyTheme } from '../../shared/theme';
 import { FADE_DURATION, TOAST_DURATION } from './constants';
 import { createIcon } from './icons';
 import { toastSlot } from './state';
-import themeCss from './styles/theme.css';
 import toastCss from './styles/toast.css';
 import { afterFrames, appendToPage, createElement, createOverlayHost, createStyle } from './utils';
 
@@ -9,10 +11,11 @@ import { afterFrames, appendToPage, createElement, createOverlayHost, createStyl
  * Shows a short message in the bottom-right corner of the page. The toast has
  * its own host so it outlives the overlay; a new toast replaces the previous one.
  */
-export function showToast(text: string, isError = false): void {
+export function showToast(text: string, isError = false, theme: Theme = 'system'): void {
   toastSlot.get()?.remove();
 
   const { host, root } = createOverlayHost('right: 16px; bottom: 16px; pointer-events: none');
+  applyTheme(host, theme);
 
   const icon = createIcon(isError ? 'circleAlert' : 'circleCheck');
   const toast = createElement('div', 'toast', icon, createElement('span', 'text', text));

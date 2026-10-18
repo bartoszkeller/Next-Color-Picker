@@ -1,6 +1,6 @@
 import { ext } from '../../shared/browser';
 import { MessageType, type CaptureRequest, type CaptureResponse } from '../../shared/messages';
-import type { Rgb } from './color-formats';
+import type { Rgb } from '../../shared/color-formats';
 
 export interface Screenshot {
   canvas: HTMLCanvasElement;

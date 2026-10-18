@@ -1,5 +1,5 @@
 /*
- * Overlay styles, scoped to the picker's shadow root; tokens come from theme.css.
+ * Overlay styles, scoped to the picker's shadow root; tokens come from src/shared/styles/theme.css.
  *
  * --lens-size and --label-height are set from constants.ts, which also uses
  * them for drawing and positioning.

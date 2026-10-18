@@ -1,0 +1,321 @@
+/*
+ * Settings page, after the shadcn/ui card, switch, select, toggle group and kbd
+ * components. Tokens come from src/shared/styles/theme.css; the build bundles
+ * both files into options.css.
+ */
+
+/* Hidden until the saved theme is applied, so the page does not flash. */
+:root:not([data-theme]) body {
+  visibility: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--foreground);
+  font: 400 14px/1.5 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted-foreground);
+}
+
+.page {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.logo {
+  display: block;
+  border-radius: var(--radius);
+}
+
+h1 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Card */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: var(--shadow-xs);
+}
+
+.card-header {
+  padding: 20px 24px 0;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.card-header .muted {
+  font-size: 13px;
+}
+
+.card-content {
+  display: grid;
+  gap: 20px;
+  padding: 20px 24px 24px;
+}
+
+/* Field: text on the left, control on the right */
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.field[hidden] {
+  display: none;
+}
+
+.field-label {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.field-description {
+  margin-top: 2px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+/* Switch */
+
+.switch {
+  flex: none;
+  position: relative;
+  width: 32px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--input);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.switch[aria-checked='true'] {
+  background: var(--primary);
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--background);
+  transition: transform 0.15s ease;
+}
+
+[data-theme='dark'] .switch:not([aria-checked='true']) .switch-thumb {
+  background: var(--foreground);
+}
+
+.switch[aria-checked='true'] .switch-thumb {
+  transform: translateX(14px);
+  background: var(--primary-foreground);
+}
+
+/* Select */
+
+.select {
+  flex: none;
+  position: relative;
+}
+
+.select select {
+  width: 160px;
+  height: 36px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: var(--shadow-xs);
+  color: var(--foreground);
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select option {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.select-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Toggle group */
+
+.toggle-group {
+  flex: none;
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+
+.toggle {
+  position: relative;
+  display: flex;
+  cursor: pointer;
+}
+
+/* The radio stays focusable and checkable; the content after it shows its state. */
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.toggle:hover .toggle-content {
+  color: var(--foreground);
+}
+
+.toggle input:checked + .toggle-content {
+  background: var(--background);
+  box-shadow: var(--shadow-xs);
+  color: var(--foreground);
+}
+
+.toggle svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Icons, as in Lucide */
+
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Focus ring */
+
+.switch:focus-visible,
+.select select:focus-visible,
+.toggle input:focus-visible + .toggle-content {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.select select:focus-visible {
+  border-color: var(--ring);
+}
+
+/* Shortcuts */
+
+.shortcuts {
+  display: grid;
+  gap: 12px;
+}
+
+.shortcuts div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shortcuts dd {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font: 500 12px/1 var(--font-sans);
+}
+
+.plus {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+/* Footer */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px;
+  font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

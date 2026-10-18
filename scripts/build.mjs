@@ -23,11 +23,21 @@ const BROWSERS = ['chrome', 'firefox'];
 
 const ENTRY_POINTS = {
   background: 'src/background/index.ts',
-  picker: 'src/content/picker/index.ts'
+  picker: 'src/content/picker/index.ts',
+  options: 'src/options/options.ts'
 };
 
-/** Copied as-is into the root of every build. */
-const STATIC_FILES = ['public', 'LICENSE'];
+/** Copied as-is into every build, as source → destination in the build. */
+const STATIC_FILES = {
+  public: '.',
+  LICENSE: 'LICENSE',
+  'src/options/options.html': 'options.html'
+};
+
+/** Stylesheets for extension pages, each concatenated from its sources. */
+const STYLESHEETS = {
+  'options.css': ['src/shared/styles/theme.css', 'src/options/options.css']
+};
 
 const { values: args } = parseArgs({
   options: {
@@ -59,6 +69,7 @@ async function buildBrowser(browser) {
 
   const manifest = await writeManifest(browser);
   await copyStaticFiles(outDir);
+  await writeStylesheets(outDir);
   await esbuild.build(bundleOptions(browser, manifest));
 
   log(browser, `built ${manifest.name} ${manifest.version} → ${path.relative(ROOT, outDir)}`);
@@ -71,18 +82,25 @@ async function watchBrowser(browser) {
   const context = await esbuild.context({ ...bundleOptions(browser, manifest), logLevel: 'info' });
   await context.watch();
 
-  // esbuild only watches the bundled sources, so the manifest and static files are watched here.
+  // esbuild only watches the bundled sources; the other files are watched here.
   const rebuildAssets = debounce(async () => {
     try {
       await writeManifest(browser);
       await copyStaticFiles(distDir(browser));
-      log(browser, 'manifest and static files updated');
+      await writeStylesheets(distDir(browser));
+      log(browser, 'manifest, static files and stylesheets updated');
     } catch (error) {
       log(browser, `asset rebuild failed: ${error instanceof Error ? error.message : error}`);
     }
   }, 100);
 
-  for (const target of ['src/manifest', 'package.json', ...STATIC_FILES]) {
+  const watched = [
+    'src/manifest',
+    'package.json',
+    ...Object.keys(STATIC_FILES),
+    ...Object.values(STYLESHEETS).flat()
+  ];
+  for (const target of new Set(watched)) {
     watch(path.join(ROOT, target), { recursive: true }, rebuildAssets);
   }
   log(browser, 'watching for changes…');
@@ -94,7 +112,7 @@ function bundleOptions(browser, manifest) {
     entryPoints: ENTRY_POINTS,
     outdir: distDir(browser),
     bundle: true,
-    // Neither script may be a module: the picker is injected with
+    // The scripts may not be modules: the picker is injected with
     // scripting.executeScript, and the background script is loaded as a
     // classic service worker in Chrome and as an event page in Firefox.
     format: 'iife',
@@ -144,10 +162,16 @@ async function writeManifest(browser) {
 }
 
 async function copyStaticFiles(outDir) {
-  for (const source of STATIC_FILES) {
-    const from = path.join(ROOT, source);
-    const to = source === 'public' ? outDir : path.join(outDir, path.basename(source));
-    await cp(from, to, { recursive: true });
+  for (const [source, destination] of Object.entries(STATIC_FILES)) {
+    await cp(path.join(ROOT, source), path.join(outDir, destination), { recursive: true });
+  }
+}
+
+async function writeStylesheets(outDir) {
+  for (const [name, sources] of Object.entries(STYLESHEETS)) {
+    const parts = await Promise.all(sources.map((source) => readFile(path.join(ROOT, source), 'utf8')));
+    const { code } = await esbuild.transform(parts.join('\n'), { loader: 'css', minify: !dev });
+    await writeFile(path.join(outDir, name), code);
   }
 }
 

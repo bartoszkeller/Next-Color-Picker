@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Next Color Picker Settings</title>
+    <link rel="icon" href="icons/icon32.png" />
+    <link rel="stylesheet" href="options.css" />
+    <script src="options.js" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <img class="logo" src="icons/icon48.png" width="40" height="40" alt="" />
+        <div>
+          <h1>Next Color Picker</h1>
+          <p class="muted">Settings</p>
+        </div>
+      </header>
+
+      <section class="card" aria-labelledby="format-title">
+        <div class="card-header">
+          <h2 id="format-title">Color format</h2>
+          <p class="muted">The format colors are shown and copied in.</p>
+        </div>
+
+        <div class="card-content">
+          <div class="field">
+            <div class="field-text">
+              <label class="field-label" for="remember-format">Remember last format</label>
+              <p class="field-description" id="remember-format-description">
+                The picker opens in the format you used last time.
+              </p>
+            </div>
+            <button
+              class="switch"
+              id="remember-format"
+              type="button"
+              role="switch"
+              aria-checked="true"
+              aria-describedby="remember-format-description"
+            >
+              <span class="switch-thumb"></span>
+            </button>
+          </div>
+
+          <div class="field" id="default-format-field" hidden>
+            <div class="field-text">
+              <label class="field-label" for="default-format">Default format</label>
+              <p class="field-description" id="default-format-description">
+                The picker always opens in this format.
+              </p>
+            </div>
+            <div class="select">
+              <select id="default-format" aria-describedby="default-format-description"></select>
+              <svg class="select-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="appearance-title">
+        <div class="card-header">
+          <h2 id="appearance-title">Appearance</h2>
+          <p class="muted">The look of the picker and of this page.</p>
+        </div>
+
+        <div class="card-content">
+          <div class="field">
+            <div class="field-text">
+              <span class="field-label" id="theme-label">Theme</span>
+              <p class="field-description">System follows your device setting.</p>
+            </div>
+            <div class="toggle-group" role="radiogroup" aria-labelledby="theme-label">
+              <label class="toggle">
+                <input type="radio" name="theme" value="system" />
+                <span class="toggle-content">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <path d="M8 21h8" />
+                    <path d="M12 17v4" />
+                  </svg>
+                  System
+                </span>
+              </label>
+              <label class="toggle">
+                <input type="radio" name="theme" value="light" />
+                <span class="toggle-content">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                  </svg>
+                  Light
+                </span>
+              </label>
+              <label class="toggle">
+                <input type="radio" name="theme" value="dark" />
+                <span class="toggle-content">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                  Dark
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="shortcuts-title">
+        <div class="card-header">
+          <h2 id="shortcuts-title">Shortcuts</h2>
+          <p class="muted">While the picker is open.</p>
+        </div>
+
+        <div class="card-content">
+          <dl class="shortcuts">
+            <div>
+              <dt>Copy the color</dt>
+              <dd><kbd>Click</kbd><kbd>Enter</kbd><kbd>Space</kbd></dd>
+            </div>
+            <div>
+              <dt>Switch the format</dt>
+              <dd><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Scroll</kbd></dd>
+            </div>
+            <div>
+              <dt>Cancel</dt>
+              <dd><kbd>Esc</kbd><kbd>Right click</kbd></dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <footer class="footer muted">
+        <span>Changes are saved automatically.</span>
+        <span id="version"></span>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,119 +1,89 @@
-# Next Color Picker
+<p align="center">
+  <img src="public/icons/icon128.png" width="96" height="96" alt="" />
+</p>
 
-A minimal color picker for Chrome and Firefox. A magnifier follows your cursor, a click copies the color of the pixel under it.
+<h1 align="center">Next Color Picker</h1>
 
-## Usage
+<p align="center">
+  Pick any color on the web, pixel-perfect, in one click.<br />
+  For Chrome and Firefox.
+</p>
 
-1. Click the toolbar button.
-2. Move the cursor over the page; the lens shows the zoomed pixels and the color of the center one.
-   Scroll as usual to reach other parts of the page; the picker stays open.
-3. Switch the color format with <kbd>Ctrl</kbd> + mouse wheel: HEX, RGB, HSL or OKLCH.
-   The last format used is remembered.
-4. Copy the color with a **click**, <kbd>Enter</kbd> or <kbd>Space</kbd>.
-   Cancel with <kbd>Esc</kbd>, a right click, or the toolbar button again.
+<p align="center">
+  <a href="https://github.com/bartoszkeller/Next-Color-Picker/releases/latest"><img src="https://img.shields.io/github/v/release/bartoszkeller/Next-Color-Picker?label=release&color=18181b" alt="Latest release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/bartoszkeller/Next-Color-Picker?color=18181b" alt="License" /></a>
+</p>
 
-## Browser support
+---
 
-| Browser         | Minimum version | Background script |
-| --------------- | --------------- | ----------------- |
-| Chrome          | 99              | Service worker    |
-| Firefox desktop | 140             | Event page        |
-| Firefox Android | 142             | Event page        |
+Next Color Picker is a lightweight eyedropper that stays out of your way. Click the toolbar button and a magnifier follows your cursor, showing the exact pixel under it. Click once and the color is on your clipboard, ready to paste into your CSS, design tool or code.
 
-Both builds come from the same source. The differences are confined to the manifests in [src/manifest/](src/manifest/) and to feature detection at runtime:
+It samples what is actually rendered on screen, so it works on everything a page can show: text, images, videos, gradients, canvas and SVG.
 
-- **Toolbar icon.** In Chrome the icon is grey by default and turns colored on pages where the picker can run, via a `declarativeContent` rule. Firefox has no `declarativeContent`, so its icon is always colored and turns grey briefly when the picker cannot run in a tab.
-- **API namespace.** The code uses `browser` in Firefox and `chrome` in Chrome, see [src/shared/browser.ts](src/shared/browser.ts).
+## Features
 
-## Permissions
+- **Pixel-perfect magnifier.** An 11× zoomed lens with a pixel grid, so you always know exactly which pixel you are picking.
+- **Four color formats.** HEX, RGB, HSL and OKLCH, all valid CSS. Switch between them with <kbd>Ctrl</kbd> + scroll while picking.
+- **Keeps up with the page.** Scroll while the picker is open, including inside scrollable panels, without losing your place.
+- **Remembers your format.** Opens in the format you used last time, or in a fixed default of your choice.
+- **Light and dark.** Follows your system theme, or set one in the settings.
+- **Private by design.** No access to your browsing data, no tracking, no network requests.
 
-| Permission           | Why                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------ |
-| `activeTab`          | Injects the picker and captures the visible tab, only after the toolbar button click |
-| `scripting`          | Injects the picker script                                                            |
-| `storage`            | Remembers the chosen color format, locally in the browser                            |
-| `declarativeContent` | Chrome only: shows the colored icon on supported pages without reading tab URLs      |
+## How to use
 
-No host permissions are requested and no data is collected; the color format never leaves the browser.
+1. Click the **Next Color Picker** button in the toolbar.
+2. Move the cursor to the color you want.
+3. Click to copy it.
 
-## Development
+| Action            | Shortcut                                                 |
+| ----------------- | -------------------------------------------------------- |
+| Copy the color    | Click, <kbd>Enter</kbd> or <kbd>Space</kbd>              |
+| Switch the format | <kbd>Ctrl</kbd> + scroll                                 |
+| Scroll the page   | Scroll                                                   |
+| Cancel            | <kbd>Esc</kbd>, right click, or the toolbar button again |
 
-Requires Node.js 22 or newer.
+## Settings
 
-```sh
-npm install
-npm run dev            # build both browsers into dist/ and rebuild on changes
-npm run start:firefox  # launch Firefox with the extension from dist/firefox
-npm run start:chrome   # launch Chrome with the extension from dist/chrome
-```
+Right-click the toolbar button and choose **Options** in Chrome, or **Settings** in Firefox.
 
-The browsers started by `start:*` reload the extension automatically on every rebuild. Alternatively, load it by hand:
+- **Remember last format.** On by default. Turn it off to always start in a default format of your choice.
+- **Theme.** System, light or dark.
 
-- **Chrome:** `chrome://extensions` → enable _Developer mode_ → _Load unpacked_ → select `dist/chrome`.
-- **Firefox:** `about:debugging#/runtime/this-firefox` → _Load Temporary Add-on_ → select `dist/firefox/manifest.json`.
+## Installation
 
-### Scripts
+Download the latest version from the [Releases](https://github.com/bartoszkeller/Next-Color-Picker/releases/latest) page.
 
-| Script                 | Description                                                          |
-| ---------------------- | -------------------------------------------------------------------- |
-| `npm run build`        | Release build of both browsers into `dist/chrome` and `dist/firefox` |
-| `npm run build:chrome` | Release build of a single browser (also `build:firefox`)             |
-| `npm run dev`          | Development build with source maps, rebuilt on changes               |
-| `npm run typecheck`    | Type-checks the sources with TypeScript                              |
-| `npm run lint`         | Lints the sources with oxlint                                        |
-| `npm run lint:firefox` | Validates the Firefox build with the AMO linter                      |
-| `npm run format`       | Formats all files with Prettier (`format:check` only checks)         |
-| `npm run check`        | All of the above, as run by CI                                       |
-| `npm run package`      | Builds and packs store-ready archives into `artifacts/`              |
-| `npm run clean`        | Removes `dist/` and `artifacts/`                                     |
+**Chrome, Edge, Brave and other Chromium browsers (99 or newer)**
 
-### Project structure
+1. Unzip `next-color-picker-<version>-chrome.zip`.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Click **Load unpacked** and select the unzipped folder.
 
-```
-src/
-├── background/          Background script
-│   ├── index.ts         Entry point, registers the listeners
-│   ├── injection.ts     Injects the picker on toolbar button clicks
-│   ├── capture.ts       Captures the visible tab for the picker
-│   ├── page-rules.ts    Chrome-only colored icon on supported pages
-│   └── icons.ts         Toolbar icon sets and feedback
-├── content/picker/      Picker overlay, injected into the page
-│   ├── index.ts         Entry point, toggles the picker
-│   ├── color-picker.ts  Overlay, lens and color sampling
-│   ├── template.ts      Overlay markup
-│   ├── color-formats.ts HEX, RGB, HSL and OKLCH conversions
-│   ├── scrolling.ts     Scrolls page content under the overlay
-│   ├── settings.ts      Remembered preferences
-│   ├── screenshot.ts    Requests and decodes tab screenshots
-│   ├── clipboard.ts     Copies with a fallback for restricted pages
-│   ├── toast.ts         Error messages
-│   ├── state.ts         State shared between injections
-│   ├── constants.ts     Sizes, timings and limits
-│   ├── utils.ts         DOM and color helpers
-│   └── styles/          Shadow DOM stylesheets
-├── manifest/            base.json, merged with chrome.json or firefox.json
-├── shared/              Code used by both scripts
-└── types/               Global type declarations
-public/                  Copied as-is into every build (icons)
-scripts/                 Build and packaging scripts
-```
+**Firefox (140 or newer)**
 
-## Releasing
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on** and select `next-color-picker-<version>-firefox.zip`.
 
-On a clean `main` branch, run one of:
+Firefox removes temporary add-ons when it restarts; a permanent install will be possible once the extension is listed on addons.mozilla.org.
 
-```sh
-npm version patch   # 1.0.0 → 1.0.1
-npm version minor   # 1.0.0 → 1.1.0
-npm version major   # 1.0.0 → 2.0.0
-```
+## Privacy
 
-This runs `npm run check`, bumps the version in `package.json` and `package-lock.json` (the single source of truth for the manifests), commits it as `Release v<version>`, creates the `v<version>` tag and pushes both. CI then checks the code again and attaches three archives to a GitHub release:
+Next Color Picker collects no data and makes no network requests. It only runs on a tab after you click its button, and the screenshots it samples colors from never leave your browser. Your settings are stored locally.
 
-- `next-color-picker-<version>-chrome.zip` for the Chrome Web Store,
-- `next-color-picker-<version>-firefox.zip` for addons.mozilla.org,
-- `next-color-picker-<version>-source.zip`, the source code that AMO asks for because the scripts are bundled and minified. It can be rebuilt with `npm ci && npm run build`.
+| Permission                         | Used for                                                 |
+| ---------------------------------- | -------------------------------------------------------- |
+| `activeTab`                        | Reading the colors of the current tab, after you click   |
+| `scripting`                        | Showing the magnifier on the page                        |
+| `storage`                          | Saving your settings                                     |
+| `declarativeContent` (Chrome only) | Showing the colored icon on pages where the picker works |
+| `menus` (Firefox only)             | Adding **Settings** to the toolbar button's menu         |
+
+Some pages do not allow extensions to run, such as browser settings, extension stores and the built-in PDF viewer. There, the icon turns grey.
+
+## Contributing
+
+Bug reports and ideas are welcome in [Issues](https://github.com/bartoszkeller/Next-Color-Picker/issues). To build the extension yourself, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[GPL-3.0](LICENSE)
+[GPL-3.0-or-later](LICENSE) © Bartosz Keller

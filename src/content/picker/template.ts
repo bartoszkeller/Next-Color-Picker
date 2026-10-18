@@ -1,6 +1,6 @@
 import { LABEL_HEIGHT, LENS_SIZE } from './constants';
 import pickerCss from './styles/picker.css';
-import themeCss from './styles/theme.css';
+import themeCss from '../../shared/styles/theme.css';
 import { createElement, createStyle } from './utils';
 
 /** Elements of the overlay that the picker updates. */

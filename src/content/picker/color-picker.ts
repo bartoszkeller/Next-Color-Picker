@@ -1,5 +1,13 @@
 import { writeToClipboard } from './clipboard';
-import { cycleFormat, DEFAULT_FORMAT, toHex, type ColorFormat, type Rgb } from './color-formats';
+import { cycleFormat, DEFAULT_FORMAT, toHex, type ColorFormat, type Rgb } from '../../shared/color-formats';
+import {
+  DEFAULT_SETTINGS,
+  loadInitialFormat,
+  loadSettings,
+  saveLastFormat,
+  type Settings
+} from '../../shared/settings';
+import { applyTheme } from '../../shared/theme';
 import {
   CENTER_INDEX,
   CENTER_OFFSET,
@@ -20,7 +28,7 @@ import {
 } from './constants';
 import { decodeScreenshot, readPixel, requestScreenshot, type Screenshot } from './screenshot';
 import { scrollUnderPointer } from './scrolling';
-import { loadColorFormat, saveColorFormat } from './settings';
+
 import { pickerSlot } from './state';
 import { renderPicker } from './template';
 import { showToast } from './toast';
@@ -53,6 +61,7 @@ export class ColorPicker {
   private hasPointer = false;
   private color: Rgb | null = null;
   private format: ColorFormat = DEFAULT_FORMAT;
+  private settings: Settings = { ...DEFAULT_SETTINGS };
   private formatChanged = false;
   private wheelTotal = 0;
   private lastWheelTime = 0;
@@ -90,14 +99,11 @@ export class ColorPicker {
     this.badge = elements.badge;
     this.ctx = createLensContext(elements.canvas);
 
+    applyTheme(this.host, this.settings.theme);
     appendToPage(this.host);
     this.applyFormat(DEFAULT_FORMAT);
 
-    // Usually resolves long before the first screenshot, while the lens is still hidden.
-    loadColorFormat().then((format) => {
-      if (format && !this.formatChanged && !this.finished) this.applyFormat(format);
-    });
-
+    this.applySettings();
     this.listen();
     this.refresh();
   }
@@ -112,13 +118,24 @@ export class ColorPicker {
 
     const value = this.format.format(this.color);
     writeToClipboard(value).then((copied) => {
-      if (!copied) showToast(`Could not copy ${value} to the clipboard`, true);
+      if (!copied) showToast(`Could not copy ${value} to the clipboard`, true, this.settings.theme);
     });
     this.finish(true);
   }
 
   cancel(): void {
     this.finish(false);
+  }
+
+  /** Usually resolves long before the first screenshot, while the lens is still hidden. */
+  private async applySettings(): Promise<void> {
+    const settings = await loadSettings();
+    const format = await loadInitialFormat(settings);
+    if (this.finished) return;
+
+    this.settings = settings;
+    applyTheme(this.host, settings.theme);
+    if (!this.formatChanged) this.applyFormat(format);
   }
 
   // Events
@@ -236,7 +253,7 @@ export class ColorPicker {
   private switchFormat(direction: number): void {
     this.formatChanged = true;
     this.applyFormat(cycleFormat(this.format, direction));
-    saveColorFormat(this.format);
+    saveLastFormat(this.format);
   }
 
   private applyFormat(format: ColorFormat): void {
@@ -342,7 +359,7 @@ export class ColorPicker {
 
     if (++this.failures > MAX_RETRIES) {
       this.cancel();
-      showToast('Could not capture this page', true);
+      showToast('Could not capture this page', true, this.settings.theme);
       return;
     }
     this.timer = window.setTimeout(() => this.refresh(), RETRY_DELAY);
