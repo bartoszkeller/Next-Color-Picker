@@ -1,6 +1,6 @@
 {
   "name": "next-color-picker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Minimal color picker extension for Chrome and Firefox: a magnifier follows your cursor, click to copy the HEX.",
   "author": "Bartosz Keller",
