@@ -1,6 +1,10 @@
 /*
- * Settings page, opened from the toolbar button's context menu. Every change
- * is saved right away; the picker reads the settings each time it opens.
+ * Extension popup, opened from the toolbar button's context menu with the
+ * settings, or with ?notice=restricted after a click on a page the picker
+ * cannot run on. In Firefox the settings also show in the add-ons manager.
+ *
+ * Every change is saved right away; the picker reads the settings each time
+ * it opens.
  */
 import { ext } from '../shared/browser';
 import { COLOR_FORMATS } from '../shared/color-formats';
@@ -14,8 +18,11 @@ import {
 } from '../shared/settings';
 import { applyTheme, onSystemThemeChange } from '../shared/theme';
 
+/** How long the notice stays open, in ms; it is meant to read like a toast. */
+const NOTICE_DURATION = 3500;
+
 const rememberSwitch = byId<HTMLButtonElement>('remember-format');
-const defaultFormatField = byId<HTMLElement>('default-format-field');
+const defaultFormatField = byId('default-format-field');
 const defaultFormatSelect = byId<HTMLSelectElement>('default-format');
 const themeInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="theme"]')];
 
@@ -24,15 +31,34 @@ let settings: Settings = { ...DEFAULT_SETTINGS };
 main();
 
 async function main(): Promise<void> {
+  const showNotice = new URLSearchParams(location.search).get('notice') === 'restricted';
+
+  settings = await loadSettings();
+  applyTheme(document.documentElement, settings.theme);
+  onSystemThemeChange(() => applyTheme(document.documentElement, settings.theme));
+
+  if (showNotice) {
+    openNotice();
+  } else {
+    openSettings();
+  }
+}
+
+function openNotice(): void {
+  byId('notice').hidden = false;
+  document.addEventListener('click', () => window.close());
+  setTimeout(() => window.close(), NOTICE_DURATION);
+}
+
+function openSettings(): void {
+  byId('settings').hidden = false;
+  byId('version').textContent = `v${ext.runtime.getManifest().version}`;
+
   for (const format of COLOR_FORMATS) {
     defaultFormatSelect.add(new Option(format.name, format.id));
   }
-  byId('version').textContent = `Version ${ext.runtime.getManifest().version}`;
-
-  settings = await loadSettings();
   render();
 
-  onSystemThemeChange(() => applyTheme(document.documentElement, settings.theme));
   rememberSwitch.addEventListener('click', () => update({ rememberFormat: !settings.rememberFormat }));
   defaultFormatSelect.addEventListener('change', () => update({ defaultFormat: defaultFormatSelect.value }));
   for (const input of themeInputs) {

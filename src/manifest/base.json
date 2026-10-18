@@ -4,18 +4,18 @@
   "author": "Bartosz Keller",
   "homepage_url": "https://bartoszkeller.dev",
   "description": "Minimal color picker: a magnifier follows your cursor, click to copy the HEX, Esc to cancel.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "contextMenus"],
   "action": {
-    "default_title": "Next Color Picker"
-  },
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": true
+    "default_title": "Next Color Picker",
+    "default_icon": {
+      "16": "icons/light-16.png",
+      "32": "icons/light-32.png"
+    }
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/light-16.png",
+    "32": "icons/light-32.png",
+    "48": "icons/light-48.png",
+    "128": "icons/light-128.png"
   }
 }

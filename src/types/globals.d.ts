@@ -6,3 +6,9 @@ declare module '*.css' {
   const css: string;
   export default css;
 }
+
+/** Fonts are bundled as binary data, for the FontFace API. */
+declare module '*.woff2' {
+  const data: Uint8Array<ArrayBuffer>;
+  export default data;
+}

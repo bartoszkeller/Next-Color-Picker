@@ -12,10 +12,15 @@
   --background: #ffffff;
   --foreground: #09090b;
   --page: #fafafa;
+  --surface: #fafafa;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
   --primary: #18181b;
   --primary-foreground: #fafafa;
+  /* The accent of the icon, see src/icons. */
+  --brand: #115cff;
+  --brand-foreground: #ffffff;
+  --brand-ring: rgba(17, 92, 255, 0.35);
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #a1a1aa;
@@ -30,8 +35,10 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.12);
 
+  /* Instrument Sans, bundled: by @font-face on extension pages, see src/content/picker/font.ts on web pages. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    'Instrument Sans', 'Next Color Picker Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
@@ -43,10 +50,14 @@
   --background: #09090b;
   --foreground: #fafafa;
   --page: #09090b;
+  --surface: #18181b;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
   --primary: #e4e4e7;
   --primary-foreground: #18181b;
+  --brand: #3d7bff;
+  --brand-foreground: #ffffff;
+  --brand-ring: rgba(61, 123, 255, 0.45);
   --border: #27272a;
   --input: #3f3f46;
   --ring: #71717a;

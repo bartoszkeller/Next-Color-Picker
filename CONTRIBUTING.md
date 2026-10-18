@@ -40,8 +40,8 @@ The picker is injected into the active tab when the toolbar button is clicked. I
 Chrome and Firefox builds come from the same source. The manifest is `src/manifest/base.json` merged with `chrome.json` or `firefox.json`, and browser differences are handled by feature detection:
 
 - **Background script.** A service worker in Chrome, an event page in Firefox.
-- **Toolbar icon.** In Chrome the icon is grey by default and turns colored on supported pages through a `declarativeContent` rule. Firefox has no `declarativeContent`, so its icon is always colored and turns grey briefly when the picker cannot run.
-- **Settings menu entry.** Chrome lists the options page in the toolbar button's menu by itself; in Firefox it is added through the `menus` API.
+- **Toolbar icon.** Drawn at runtime from `src/icons/light.svg` or `dark.svg`, with the accent in the color under the cursor or copied last. The build renders the same SVGs to the static PNG icons. To follow the browser theme, Firefox uses `matchMedia` in its event page; Chrome's service worker has none, so an offscreen document reports the color scheme.
+- **Popup.** The settings, and the notice for pages the picker cannot run on, open in the extension popup through `action.openPopup()`, which Chrome supports from version 127. Older versions open the settings in a small window and show a badge instead of the notice.
 
 ### Project structure
 
@@ -49,11 +49,12 @@ Chrome and Firefox builds come from the same source. The manifest is `src/manife
 src/
 ├── background/       Background script: injection, screenshots, toolbar icon and menu
 ├── content/picker/   The picker overlay, injected into the page
-├── options/          The settings page
+├── popup/            The popup with the settings and the notice
+├── offscreen/        Chrome only: reports the color scheme to the service worker
+├── icons/            The icon, for light and dark browser themes
 ├── shared/           Code and styles used by all of the above
 ├── manifest/         Manifest parts, merged per browser
 └── types/            Global type declarations
-public/               Copied as-is into every build
 scripts/              Build and packaging scripts
 ```
 

@@ -26,6 +26,8 @@ import {
   SWALLOWED_EVENTS,
   ZOOM
 } from './constants';
+import { loadFont } from './font';
+import { keepIconColor, previewIconColor, resetIconColor } from './icon-color';
 import { decodeScreenshot, readPixel, requestScreenshot, type Screenshot } from './screenshot';
 import { scrollUnderPointer } from './scrolling';
 
@@ -99,6 +101,7 @@ export class ColorPicker {
     this.badge = elements.badge;
     this.ctx = createLensContext(elements.canvas);
 
+    loadFont();
     applyTheme(this.host, this.settings.theme);
     appendToPage(this.host);
     this.applyFormat(DEFAULT_FORMAT);
@@ -120,6 +123,7 @@ export class ColorPicker {
     writeToClipboard(value).then((copied) => {
       if (!copied) showToast(`Could not copy ${value} to the clipboard`, true, this.settings.theme);
     });
+    keepIconColor(toHex(this.color));
     this.finish(true);
   }
 
@@ -167,7 +171,9 @@ export class ColorPicker {
       [window, 'keydown', (event) => this.onKeyDown(event as KeyboardEvent)],
       [window, 'scroll', () => this.onScroll()],
       [window, 'resize', () => this.onResize()],
-      [window, 'blur', () => this.cancel()]
+      [window, 'blur', () => this.cancel()],
+      // Leaving the page would otherwise keep the previewed color in the toolbar icon.
+      [window, 'pagehide', () => this.cancel()]
     );
 
     for (const [target, type, handler] of bindings) {
@@ -441,6 +447,7 @@ export class ColorPicker {
   private setColor(color: Rgb | null): void {
     this.color = color;
     this.renderValue();
+    if (color) previewIconColor(toHex(color));
   }
 
   /** Shows the current color in the current format. */
@@ -489,6 +496,7 @@ export class ColorPicker {
     pickerSlot.release(this);
 
     if (!copied) {
+      resetIconColor();
       this.host.remove();
       return;
     }

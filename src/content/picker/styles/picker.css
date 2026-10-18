@@ -89,6 +89,11 @@
   display: none;
 }
 
+/* Without the badge, the label needs the same padding on both sides. */
+.is-copied .label {
+  padding-right: 9px;
+}
+
 .is-copied .value {
   font-family: var(--font-sans);
   letter-spacing: 0;

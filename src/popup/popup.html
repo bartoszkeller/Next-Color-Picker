@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Next Color Picker</title>
+    <link rel="stylesheet" href="popup.css" />
+    <script src="popup.js" defer></script>
+  </head>
+  <body>
+    <!-- Shown when the picker cannot run on the current page. -->
+    <div class="notice" id="notice" role="alert" hidden>
+      <svg class="notice-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4" />
+        <path d="M12 16h.01" />
+      </svg>
+      <div>
+        <p class="notice-title">Can’t pick colors on this page</p>
+        <p class="notice-description">
+          The browser doesn’t allow extensions here, as on its own pages and in extension stores.
+        </p>
+      </div>
+    </div>
+
+    <main class="settings" id="settings" hidden>
+      <header class="header">
+        <span class="logo" aria-hidden="true"></span>
+        <div class="header-text">
+          <h1>Next Color Picker</h1>
+          <p class="muted">Settings</p>
+        </div>
+        <span class="version" id="version"></span>
+      </header>
+
+      <section class="section" aria-labelledby="format-title">
+        <h2 id="format-title">Color format</h2>
+
+        <div class="field">
+          <div class="field-text">
+            <label class="field-label" for="remember-format">Remember last format</label>
+            <p class="field-description" id="remember-format-description">
+              Open in the format used last time.
+            </p>
+          </div>
+          <button
+            class="switch"
+            id="remember-format"
+            type="button"
+            role="switch"
+            aria-checked="true"
+            aria-describedby="remember-format-description"
+          >
+            <span class="switch-thumb"></span>
+          </button>
+        </div>
+
+        <div class="field" id="default-format-field" hidden>
+          <div class="field-text">
+            <label class="field-label" for="default-format">Default format</label>
+            <p class="field-description" id="default-format-description">Always open in this format.</p>
+          </div>
+          <div class="select">
+            <select id="default-format" aria-describedby="default-format-description"></select>
+            <svg class="select-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <hr class="separator" />
+
+      <section class="section" aria-labelledby="theme-title">
+        <h2 id="theme-title">Theme</h2>
+
+        <div class="toggle-group" role="radiogroup" aria-labelledby="theme-title">
+          <label class="toggle">
+            <input type="radio" name="theme" value="system" />
+            <span class="toggle-content">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="20" height="14" x="2" y="3" rx="2" />
+                <path d="M8 21h8" />
+                <path d="M12 17v4" />
+              </svg>
+              System
+            </span>
+          </label>
+          <label class="toggle">
+            <input type="radio" name="theme" value="light" />
+            <span class="toggle-content">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+              </svg>
+              Light
+            </span>
+          </label>
+          <label class="toggle">
+            <input type="radio" name="theme" value="dark" />
+            <span class="toggle-content">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+              Dark
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <hr class="separator" />
+
+      <section class="section" aria-labelledby="shortcuts-title">
+        <h2 id="shortcuts-title">Shortcuts</h2>
+
+        <dl class="shortcuts">
+          <div>
+            <dt>Copy</dt>
+            <dd><kbd>Click</kbd><kbd>Enter</kbd><kbd>Space</kbd></dd>
+          </div>
+          <div>
+            <dt>Switch format</dt>
+            <dd><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Scroll</kbd></dd>
+          </div>
+          <div>
+            <dt>Cancel</dt>
+            <dd><kbd>Esc</kbd><kbd>Right click</kbd></dd>
+          </div>
+        </dl>
+      </section>
+    </main>
+  </body>
+</html>

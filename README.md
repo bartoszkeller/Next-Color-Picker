@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/icons/icon128.png" width="96" height="96" alt="" />
+  <img src="src/icons/light.svg" width="96" height="96" alt="" />
 </p>
 
 <h1 align="center">Next Color Picker</h1>
@@ -26,6 +26,7 @@ It samples what is actually rendered on screen, so it works on everything a page
 - **Four color formats.** HEX, RGB, HSL and OKLCH, all valid CSS. Switch between them with <kbd>Ctrl</kbd> + scroll while picking.
 - **Keeps up with the page.** Scroll while the picker is open, including inside scrollable panels, without losing your place.
 - **Remembers your format.** Opens in the format you used last time, or in a fixed default of your choice.
+- **A toolbar icon in your color.** The icon fills with the color under the cursor while you pick, and keeps the last copied one.
 - **Light and dark.** Follows your system theme, or set one in the settings.
 - **Private by design.** No access to your browsing data, no tracking, no network requests.
 
@@ -44,7 +45,7 @@ It samples what is actually rendered on screen, so it works on everything a page
 
 ## Settings
 
-Right-click the toolbar button and choose **Options** in Chrome, or **Settings** in Firefox.
+Right-click the toolbar button and choose **Settings**.
 
 - **Remember last format.** On by default. Turn it off to always start in a default format of your choice.
 - **Theme.** System, light or dark.
@@ -70,15 +71,15 @@ Firefox removes temporary add-ons when it restarts; a permanent install will be 
 
 Next Color Picker collects no data and makes no network requests. It only runs on a tab after you click its button, and the screenshots it samples colors from never leave your browser. Your settings are stored locally.
 
-| Permission                         | Used for                                                 |
-| ---------------------------------- | -------------------------------------------------------- |
-| `activeTab`                        | Reading the colors of the current tab, after you click   |
-| `scripting`                        | Showing the magnifier on the page                        |
-| `storage`                          | Saving your settings                                     |
-| `declarativeContent` (Chrome only) | Showing the colored icon on pages where the picker works |
-| `menus` (Firefox only)             | Adding **Settings** to the toolbar button's menu         |
+| Permission                | Used for                                                   |
+| ------------------------- | ---------------------------------------------------------- |
+| `activeTab`               | Reading the colors of the current tab, after you click     |
+| `scripting`               | Showing the magnifier on the page                          |
+| `storage`                 | Saving your settings                                       |
+| `contextMenus`            | Adding **Settings** to the toolbar button's menu           |
+| `offscreen` (Chrome only) | Matching the toolbar icon to a light or dark browser theme |
 
-Some pages do not allow extensions to run, such as browser settings, extension stores and the built-in PDF viewer. There, the icon turns grey.
+Some pages do not allow extensions to run, such as browser settings, extension stores and the built-in PDF viewer. There, a short notice tells you so.
 
 ## Contributing
 
@@ -87,3 +88,5 @@ Bug reports and ideas are welcome in [Issues](https://github.com/bartoszkeller/N
 ## License
 
 [GPL-3.0-or-later](LICENSE) © Bartosz Keller
+
+The extension includes the [Instrument Sans](https://github.com/Instrument/instrument-sans) font and [Lucide](https://lucide.dev) icons, and its design follows [shadcn/ui](https://ui.shadcn.com). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for their licenses.

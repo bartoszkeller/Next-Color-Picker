@@ -24,6 +24,9 @@ export const FORMAT_STEP_RESET = 200;
 
 export const TOAST_DURATION = 3000;
 
+/** Minimum time between toolbar icon updates while the cursor moves, in ms. */
+export const ICON_PREVIEW_INTERVAL = 80;
+
 /** Highest z-index there is, so the overlay stays above the page. */
 export const TOP_LAYER = 2147483647;
 

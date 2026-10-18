@@ -1,20 +1,38 @@
 /*
- * Settings page, after the shadcn/ui card, switch, select, toggle group and kbd
- * components. Tokens come from src/shared/styles/theme.css; the build bundles
- * both files into options.css.
+ * Extension popup, after the shadcn/ui switch, select, toggle group, separator,
+ * kbd and alert components. Tokens come from src/shared/styles/theme.css; the
+ * build bundles both files into popup.css.
  */
 
-/* Hidden until the saved theme is applied, so the page does not flash. */
+/* Bundled with the extension, see THIRD_PARTY_NOTICES.md. */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url('fonts/instrument-sans.woff2') format('woff2-variations');
+}
+
+/* Hidden until the saved theme is applied, so the popup does not flash. */
 :root:not([data-theme]) body {
   visibility: hidden;
 }
 
+html,
 body {
+  background: var(--background);
+}
+
+body {
+  width: 340px;
   margin: 0;
-  background: var(--page);
   color: var(--foreground);
-  font: 400 14px/1.5 var(--font-sans);
+  font: 400 13px/1.5 var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 h1,
@@ -29,75 +47,108 @@ dd {
   color: var(--muted-foreground);
 }
 
-.page {
-  display: grid;
-  gap: 16px;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 48px 24px;
+/* Icons, as in Lucide */
+
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* Header */
+/* Settings */
 
+.settings {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 16px;
+}
+
+/* Everything below the header is inset; the header spans the full width. */
+.settings > :not(.header) {
+  margin: 0 16px;
+}
+
+/* App header: logo, title and a version badge, fading into the content. */
 .header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 8px;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to bottom, var(--surface), var(--background));
 }
 
+/* The icon variant for the theme, as the toolbar shows it. */
 .logo {
-  display: block;
-  border-radius: var(--radius);
+  flex: none;
+  width: 26px;
+  height: 26px;
+  background: url('icons/light.svg') center / contain no-repeat;
+}
+
+[data-theme='dark'] .logo {
+  background-image: url('icons/dark.svg');
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0;
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
-/* Card */
-
-.card {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--background);
-  box-shadow: var(--shadow-xs);
+.header-text .muted {
+  font-size: 12px;
+  line-height: 1.3;
 }
 
-.card-header {
-  padding: 20px 24px 0;
+/* Like the shadcn/ui outline badge. */
+.version {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.section {
+  display: grid;
+  gap: 12px;
 }
 
 h2 {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
-.card-header .muted {
-  font-size: 13px;
+.separator {
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--border);
 }
-
-.card-content {
-  display: grid;
-  gap: 20px;
-  padding: 20px 24px 24px;
-}
-
-/* Field: text on the left, control on the right */
 
 .field {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-}
-
-.field[hidden] {
-  display: none;
+  gap: 16px;
 }
 
 .field-label {
@@ -106,9 +157,9 @@ h2 {
 }
 
 .field-description {
-  margin-top: 2px;
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* Switch */
@@ -128,7 +179,7 @@ h2 {
 }
 
 .switch[aria-checked='true'] {
-  background: var(--primary);
+  background: var(--brand);
 }
 
 .switch-thumb {
@@ -148,7 +199,7 @@ h2 {
 
 .switch[aria-checked='true'] .switch-thumb {
   transform: translateX(14px);
-  background: var(--primary-foreground);
+  background: var(--brand-foreground);
 }
 
 /* Select */
@@ -159,9 +210,9 @@ h2 {
 }
 
 .select select {
-  width: 160px;
-  height: 36px;
-  padding: 0 32px 0 12px;
+  width: 112px;
+  height: 32px;
+  padding: 0 30px 0 10px;
   border: 1px solid var(--input);
   border-radius: var(--radius-md);
   background: transparent;
@@ -180,7 +231,7 @@ h2 {
 .select-icon {
   position: absolute;
   top: 50%;
-  right: 10px;
+  right: 9px;
   width: 16px;
   height: 16px;
   margin-top: -8px;
@@ -191,8 +242,8 @@ h2 {
 /* Toggle group */
 
 .toggle-group {
-  flex: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   padding: 3px;
   border-radius: var(--radius);
   background: var(--muted);
@@ -213,13 +264,13 @@ h2 {
 
 .toggle-content {
   display: inline-flex;
+  flex: 1;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 10px;
+  height: 28px;
   border-radius: var(--radius-md);
   color: var(--muted-foreground);
-  font-size: 13px;
   font-weight: 500;
   transition:
     background-color 0.15s ease,
@@ -236,19 +287,13 @@ h2 {
   color: var(--foreground);
 }
 
-.toggle svg {
-  width: 15px;
-  height: 15px;
+.toggle input:checked + .toggle-content svg {
+  color: var(--brand);
 }
 
-/* Icons, as in Lucide */
-
-svg {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.toggle svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Focus ring */
@@ -257,25 +302,25 @@ svg {
 .select select:focus-visible,
 .toggle input:focus-visible + .toggle-content {
   outline: none;
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  box-shadow: 0 0 0 3px var(--brand-ring);
 }
 
 .select select:focus-visible {
-  border-color: var(--ring);
+  border-color: var(--brand);
 }
 
 /* Shortcuts */
 
 .shortcuts {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .shortcuts div {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .shortcuts dd {
@@ -294,28 +339,39 @@ kbd {
   border-radius: 4px;
   background: var(--muted);
   color: var(--muted-foreground);
-  font: 500 12px/1 var(--font-sans);
+  font: 500 11px/1 var(--font-sans);
 }
 
 .plus {
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: 11px;
 }
 
-/* Footer */
+/* Notice, like the shadcn/ui destructive alert */
 
-.footer {
+.notice {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 4px;
-  font-size: 13px;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: default;
 }
 
-@media (max-width: 520px) {
-  .field {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+.notice-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--destructive);
+}
+
+.notice-title {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.notice-description {
+  margin-top: 2px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.4;
 }

@@ -2,6 +2,7 @@ import type { Theme } from '../../shared/settings';
 import themeCss from '../../shared/styles/theme.css';
 import { applyTheme } from '../../shared/theme';
 import { FADE_DURATION, TOAST_DURATION } from './constants';
+import { loadFont } from './font';
 import { createIcon } from './icons';
 import { toastSlot } from './state';
 import toastCss from './styles/toast.css';
@@ -16,6 +17,7 @@ export function showToast(text: string, isError = false, theme: Theme = 'system'
 
   const { host, root } = createOverlayHost('right: 16px; bottom: 16px; pointer-events: none');
   applyTheme(host, theme);
+  loadFont();
 
   const icon = createIcon(isError ? 'circleAlert' : 'circleCheck');
   const toast = createElement('div', 'toast', icon, createElement('span', 'text', text));

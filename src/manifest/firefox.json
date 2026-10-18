@@ -1,15 +1,15 @@
 {
-  "permissions": ["menus"],
   "background": {
     "scripts": ["background.js"]
   },
   "action": {
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "theme_icons": [
+      { "dark": "icons/light-16.png", "light": "icons/dark-16.png", "size": 16 },
+      { "dark": "icons/light-32.png", "light": "icons/dark-32.png", "size": 32 }
+    ]
+  },
+  "options_ui": {
+    "page": "popup.html"
   },
   "browser_specific_settings": {
     "gecko": {
