@@ -4,7 +4,7 @@
   "author": "Bartosz Keller",
   "homepage_url": "https://bartoszkeller.dev",
   "description": "Minimal color picker: a magnifier follows your cursor, click to copy the HEX, Esc to cancel.",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "action": {
     "default_title": "Next Color Picker"
   },

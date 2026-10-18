@@ -8,16 +8,6 @@ export function afterFrames(count: number): Promise<void> {
   });
 }
 
-export function toHex(r: number, g: number, b: number): string {
-  return (
-    '#' +
-    [r, g, b]
-      .map((channel) => channel.toString(16).padStart(2, '0'))
-      .join('')
-      .toUpperCase()
-  );
-}
-
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }

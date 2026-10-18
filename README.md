@@ -1,12 +1,15 @@
 # Next Color Picker
 
-A minimal color picker for Chrome and Firefox. A magnifier follows your cursor, a click copies the HEX code of the pixel under it.
+A minimal color picker for Chrome and Firefox. A magnifier follows your cursor, a click copies the color of the pixel under it.
 
 ## Usage
 
 1. Click the toolbar button.
-2. Move the cursor over the page; the lens shows the zoomed pixels and the HEX value of the center one.
-3. Copy the color with a **click**, <kbd>Enter</kbd> or <kbd>Space</kbd>.
+2. Move the cursor over the page; the lens shows the zoomed pixels and the color of the center one.
+   Scroll as usual to reach other parts of the page; the picker stays open.
+3. Switch the color format with <kbd>Ctrl</kbd> + mouse wheel: HEX, RGB, HSL or OKLCH.
+   The last format used is remembered.
+4. Copy the color with a **click**, <kbd>Enter</kbd> or <kbd>Space</kbd>.
    Cancel with <kbd>Esc</kbd>, a right click, or the toolbar button again.
 
 ## Browser support
@@ -28,9 +31,10 @@ Both builds come from the same source. The differences are confined to the manif
 | -------------------- | ------------------------------------------------------------------------------------ |
 | `activeTab`          | Injects the picker and captures the visible tab, only after the toolbar button click |
 | `scripting`          | Injects the picker script                                                            |
+| `storage`            | Remembers the chosen color format, locally in the browser                            |
 | `declarativeContent` | Chrome only: shows the colored icon on supported pages without reading tab URLs      |
 
-No host permissions are requested and no data is collected.
+No host permissions are requested and no data is collected; the color format never leaves the browser.
 
 ## Development
 
@@ -77,6 +81,9 @@ src/
 │   ├── index.ts         Entry point, toggles the picker
 │   ├── color-picker.ts  Overlay, lens and color sampling
 │   ├── template.ts      Overlay markup
+│   ├── color-formats.ts HEX, RGB, HSL and OKLCH conversions
+│   ├── scrolling.ts     Scrolls page content under the overlay
+│   ├── settings.ts      Remembered preferences
 │   ├── screenshot.ts    Requests and decodes tab screenshots
 │   ├── clipboard.ts     Copies with a fallback for restricted pages
 │   ├── toast.ts         Error messages

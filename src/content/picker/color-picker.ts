@@ -1,26 +1,30 @@
 import { writeToClipboard } from './clipboard';
+import { cycleFormat, DEFAULT_FORMAT, toHex, type ColorFormat, type Rgb } from './color-formats';
 import {
   CENTER_INDEX,
   CENTER_OFFSET,
   CONFIRM_DURATION,
   EDGE_MARGIN,
   FADE_DURATION,
+  FORMAT_STEP_DELTA,
+  FORMAT_STEP_RESET,
   LABEL_GAP,
   LABEL_HEIGHT,
   LENS_SIZE,
   MAX_RETRIES,
-  NO_COLOR,
   RECAPTURE_DELAY,
   RETRY_DELAY,
   SOURCE_PIXELS,
   SWALLOWED_EVENTS,
   ZOOM
 } from './constants';
-import { decodeScreenshot, requestScreenshot, type Screenshot } from './screenshot';
+import { decodeScreenshot, readPixel, requestScreenshot, type Screenshot } from './screenshot';
+import { scrollUnderPointer } from './scrolling';
+import { loadColorFormat, saveColorFormat } from './settings';
 import { pickerSlot } from './state';
 import { renderPicker } from './template';
 import { showToast } from './toast';
-import { afterFrames, appendToPage, clamp, createOverlayHost, toHex } from './utils';
+import { afterFrames, appendToPage, clamp, createOverlayHost } from './utils';
 
 type Binding = [target: EventTarget, type: string, handler: (event: Event) => void];
 
@@ -29,11 +33,17 @@ interface Point {
   y: number;
 }
 
+/** Non-passive, so that wheel events can be canceled. */
+const LISTENER_OPTIONS: AddEventListenerOptions = { capture: true, passive: false };
+
 /**
  * Full-page overlay with a magnifying lens that follows the cursor.
  *
  * Colors are sampled from a screenshot of the visible tab, drawn to an offscreen
  * canvas. The screenshot is retaken whenever the viewport scrolls or resizes.
+ * While the page scrolls, the previous screenshot stays in the lens, shifted by
+ * the scrolled distance, and its colors are marked as stale until the new one
+ * arrives.
  */
 export class ColorPicker {
   // The pointer position is unknown until the first mousemove, which usually
@@ -41,8 +51,14 @@ export class ColorPicker {
   // the lens stays hidden and nothing is sampled.
   private pointer: Point = { x: Math.round(innerWidth / 2), y: Math.round(innerHeight / 2) };
   private hasPointer = false;
-  private hex = NO_COLOR;
+  private color: Rgb | null = null;
+  private format: ColorFormat = DEFAULT_FORMAT;
+  private formatChanged = false;
+  private wheelTotal = 0;
+  private lastWheelTime = 0;
   private screenshot: Screenshot | null = null;
+  private stale = false;
+  private commitPending = false;
   private labelWidth = 0;
   private bindings: Binding[] = [];
   private timer = 0;
@@ -57,7 +73,7 @@ export class ColorPicker {
   private readonly lens: HTMLElement;
   private readonly label: HTMLElement;
   private readonly swatch: HTMLElement;
-  private readonly hexNode: HTMLElement;
+  private readonly valueNode: HTMLElement;
   private readonly ctx: CanvasRenderingContext2D;
 
   constructor() {
@@ -69,23 +85,32 @@ export class ColorPicker {
     this.lens = elements.lens;
     this.label = elements.label;
     this.swatch = elements.swatch;
-    this.hexNode = elements.hex;
+    this.valueNode = elements.value;
     this.ctx = createLensContext(elements.canvas);
 
     appendToPage(this.host);
-    this.measureLabel();
-    this.place();
+    this.applyFormat(DEFAULT_FORMAT);
+
+    // Usually resolves long before the first screenshot, while the lens is still hidden.
+    loadColorFormat().then((format) => {
+      if (format && !this.formatChanged && !this.finished) this.applyFormat(format);
+    });
 
     this.listen();
     this.refresh();
   }
 
   commit(): void {
-    if (this.hex === NO_COLOR) return;
+    // Copy from the screenshot that is on its way, not from the outdated one.
+    if (this.stale) {
+      this.commitPending = true;
+      return;
+    }
+    if (!this.color) return;
 
-    const hex = this.hex;
-    writeToClipboard(hex).then((copied) => {
-      if (!copied) showToast(`Could not copy ${hex} to the clipboard`, true);
+    const value = this.format.format(this.color);
+    writeToClipboard(value).then((copied) => {
+      if (!copied) showToast(`Could not copy ${value} to the clipboard`, true);
     });
     this.finish(true);
   }
@@ -103,6 +128,7 @@ export class ColorPicker {
       [this.layer, 'mousemove', (event) => this.track(event as MouseEvent)],
       [this.layer, 'mouseleave', () => this.setPointerInside(false)],
       [this.layer, 'mousedown', (event) => event.preventDefault()],
+      [this.layer, 'wheel', (event) => this.onWheel(event as WheelEvent)],
       [
         this.layer,
         'click',
@@ -120,20 +146,20 @@ export class ColorPicker {
         }
       ],
       [window, 'keydown', (event) => this.onKeyDown(event as KeyboardEvent)],
-      [window, 'scroll', () => this.scheduleRefresh()],
-      [window, 'resize', () => this.scheduleRefresh()],
+      [window, 'scroll', () => this.onScroll()],
+      [window, 'resize', () => this.onResize()],
       [window, 'blur', () => this.cancel()]
     );
 
     for (const [target, type, handler] of bindings) {
-      target.addEventListener(type, handler, true);
+      target.addEventListener(type, handler, LISTENER_OPTIONS);
     }
     this.bindings = bindings;
   }
 
   private unlisten(): void {
     for (const [target, type, handler] of this.bindings) {
-      target.removeEventListener(type, handler, true);
+      target.removeEventListener(type, handler, LISTENER_OPTIONS);
     }
     this.bindings = [];
   }
@@ -151,6 +177,45 @@ export class ColorPicker {
     }
   }
 
+  /** Ctrl + wheel switches the color format; a plain wheel scrolls the page. */
+  private onWheel(event: WheelEvent): void {
+    if (!event.ctrlKey) {
+      scrollUnderPointer(event, this.host);
+      return;
+    }
+
+    // Also keeps the browser from zooming the page.
+    event.preventDefault();
+
+    const delta = event.deltaY || event.deltaX;
+    if (!delta) return;
+
+    // Mice that report lines or pages scroll in clear notches, one step each.
+    if (event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL) {
+      this.switchFormat(Math.sign(delta));
+      return;
+    }
+
+    if (event.timeStamp - this.lastWheelTime > FORMAT_STEP_RESET) this.wheelTotal = 0;
+    this.lastWheelTime = event.timeStamp;
+    this.wheelTotal += delta;
+
+    if (Math.abs(this.wheelTotal) >= FORMAT_STEP_DELTA) {
+      this.switchFormat(Math.sign(this.wheelTotal));
+      this.wheelTotal = 0;
+    }
+  }
+
+  private onScroll(): void {
+    this.markStale();
+    this.scheduleRefresh();
+  }
+
+  private onResize(): void {
+    this.invalidate();
+    this.scheduleRefresh();
+  }
+
   private track(event: MouseEvent): void {
     this.pointer = { x: event.clientX, y: event.clientY };
     this.setPointerInside(true);
@@ -163,20 +228,51 @@ export class ColorPicker {
     this.layer.classList.toggle('has-pointer', inside);
   }
 
+  // Color formats
+
+  /** Moves to the next (1) or previous (-1) format and remembers it. */
+  private switchFormat(direction: number): void {
+    this.formatChanged = true;
+    this.applyFormat(cycleFormat(this.format, direction));
+    saveColorFormat(this.format);
+  }
+
+  private applyFormat(format: ColorFormat): void {
+    this.format = format;
+    this.label.style.setProperty('--value-length', String(format.maxLength));
+    this.renderValue();
+    this.measureLabel();
+    this.place();
+  }
+
   // Screenshots
 
   private scheduleRefresh(): void {
-    this.invalidate();
     clearTimeout(this.timer);
     this.timer = window.setTimeout(() => this.refresh(), RECAPTURE_DELAY);
+  }
+
+  /**
+   * Keeps the lens on screen with the previous screenshot after a scroll, but
+   * marks its colors as stale, so that an outdated color cannot be copied.
+   */
+  private markStale(): void {
+    if (!this.screenshot) return;
+
+    // Discards a capture that may have been taken mid-scroll.
+    this.generation++;
+    this.stale = true;
+    this.layer.classList.add('is-stale');
+    this.draw();
   }
 
   /** Hides the lens until a new screenshot arrives, so an outdated color cannot be copied. */
   private invalidate(): void {
     this.generation++;
     this.screenshot = null;
-    this.layer.classList.remove('is-ready');
-    this.setColor(NO_COLOR);
+    this.stale = false;
+    this.layer.classList.remove('is-ready', 'is-stale');
+    this.setColor(null);
   }
 
   /** Captures the viewport and redraws the lens. */
@@ -212,9 +308,16 @@ export class ColorPicker {
     }
 
     this.screenshot = screenshot;
+    this.stale = false;
     this.failures = 0;
+    this.layer.classList.remove('is-stale');
     this.layer.classList.add('is-ready');
     this.draw();
+
+    if (this.commitPending) {
+      this.commitPending = false;
+      this.commit();
+    }
   }
 
   /** Resolves to the decoded screenshot, or null on failure. */
@@ -224,11 +327,12 @@ export class ColorPicker {
     this.layer.classList.add('is-capturing');
     await afterFrames(2);
 
+    const scroll = { x: scrollX, y: scrollY };
     const response = this.finished ? null : await requestScreenshot();
     this.layer.classList.remove('is-capturing');
     if (!response?.ok) return null;
 
-    return decodeScreenshot(response.dataUrl).catch(() => null);
+    return decodeScreenshot(response.dataUrl, scroll).catch(() => null);
   }
 
   private retry(): void {
@@ -246,17 +350,19 @@ export class ColorPicker {
 
   private draw(): void {
     this.place();
-    if (!this.screenshot || !this.hasPointer) return;
+    const shot = this.screenshot;
+    if (!shot || !this.hasPointer) return;
 
-    const x = Math.floor(this.pointer.x * this.screenshot.scale);
-    const y = Math.floor(this.pointer.y * this.screenshot.scale);
+    // The scroll offsets are zero unless the page has scrolled since the capture.
+    const x = Math.floor((this.pointer.x + scrollX - shot.scrollX) * shot.scale);
+    const y = Math.floor((this.pointer.y + scrollY - shot.scrollY) * shot.scale);
 
     this.ctx.fillStyle = '#f4f4f5';
     this.ctx.fillRect(0, 0, LENS_SIZE, LENS_SIZE);
-    this.drawZoom(this.screenshot, x, y);
+    this.drawZoom(shot, x, y);
     this.drawGrid();
     this.drawCenterMarker();
-    this.setColor(sample(this.screenshot, x, y));
+    this.setColor(readPixel(shot, x, y));
   }
 
   private drawZoom({ canvas, width, height }: Screenshot, centerX: number, centerY: number): void {
@@ -313,12 +419,18 @@ export class ColorPicker {
     ctx.strokeRect(CENTER_OFFSET + 0.5, CENTER_OFFSET + 0.5, ZOOM - 1, ZOOM - 1);
   }
 
-  private setColor(hex: string): void {
-    if (hex === this.hex) return;
+  private setColor(color: Rgb | null): void {
+    this.color = color;
+    this.renderValue();
+  }
 
-    this.hex = hex;
-    this.hexNode.textContent = hex;
-    this.swatch.style.background = hex;
+  /** Shows the current color in the current format. */
+  private renderValue(): void {
+    const text = this.color ? this.format.format(this.color) : this.format.placeholder;
+    if (this.valueNode.textContent !== text) this.valueNode.textContent = text;
+
+    // Without a color, the swatch keeps showing the last one.
+    if (this.color) this.swatch.style.background = toHex(this.color);
   }
 
   /** Centers the lens on the pointer; the label goes below it, or above near the bottom edge. */
@@ -354,7 +466,8 @@ export class ColorPicker {
 
     // Show the confirmation in the label, then fade out the overlay.
     this.host.style.pointerEvents = 'none';
-    this.hexNode.textContent = 'copied';
+    this.layer.classList.add('is-copied');
+    this.valueNode.textContent = 'copied';
     this.measureLabel();
     this.place();
 
@@ -379,10 +492,4 @@ function createLensContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D 
   ctx.scale(ratio, ratio);
   ctx.imageSmoothingEnabled = false;
   return ctx;
-}
-
-function sample({ ctx, width, height }: Screenshot, x: number, y: number): string {
-  const [r = 0, g = 0, b = 0] = ctx.getImageData(clamp(x, 0, width - 1), clamp(y, 0, height - 1), 1, 1).data;
-
-  return toHex(r, g, b);
 }

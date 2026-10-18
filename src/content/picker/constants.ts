@@ -15,7 +15,12 @@ export const FADE_DURATION = 200;
 export const LABEL_HEIGHT = 26;
 export const LABEL_GAP = 10;
 export const EDGE_MARGIN = 6;
-export const NO_COLOR = '#------';
+
+// Ctrl + wheel switches the color format. Touchpads send many small wheel
+// events, so the format only changes once this much scrolling has added up,
+// counted from the last change or after a pause of FORMAT_STEP_RESET ms.
+export const FORMAT_STEP_DELTA = 50;
+export const FORMAT_STEP_RESET = 200;
 
 export const TOAST_DURATION = 3000;
 
@@ -46,5 +51,6 @@ export const SWALLOWED_EVENTS = [
   'touchstart',
   'touchmove',
   'touchend',
-  'dragstart'
+  'dragstart',
+  'wheel'
 ] as const;

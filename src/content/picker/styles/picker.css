@@ -75,6 +75,29 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
 }
 
+/*
+ * Wide enough for the longest value of the current format (--value-length, in
+ * characters), so the label keeps its size while the color changes.
+ */
+.value {
+  min-width: calc(var(--value-length) * (1ch + 0.04em));
+}
+
+.is-copied .value {
+  min-width: 0;
+}
+
+/* The page has scrolled since the last screenshot; a fresh one is on its way. */
+.swatch,
+.value {
+  transition: opacity 0.12s ease;
+}
+
+.is-stale .swatch,
+.is-stale .value {
+  opacity: 0.45;
+}
+
 .is-ready.has-pointer .lens,
 .is-ready.has-pointer .label {
   opacity: 1;
