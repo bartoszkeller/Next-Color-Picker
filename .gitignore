@@ -1,7 +1,14 @@
+# Dependencies
+node_modules/
+
 # Build output
 build/
 dist/
+artifacts/
 *.zip
+
+# Logs
+npm-debug.log*
 
 # Editors
 .vscode/

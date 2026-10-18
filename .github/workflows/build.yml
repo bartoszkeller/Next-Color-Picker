@@ -1,7 +1,8 @@
-# Packs the extension into next-color-picker-<version>.zip.
+# Checks the code and packs the extension for Chrome and Firefox.
 #
-# Every run uploads the package as a workflow artifact. Pushing a v<version> tag
-# also publishes it as a GitHub release; the tag must match the manifest version.
+# Every run uploads the packages as a workflow artifact. Pushing a v<version>
+# tag also publishes them as a GitHub release; the tag must match the version
+# in package.json.
 
 name: Build
 
@@ -12,58 +13,104 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
   build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read version
+        id: package
+        run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag against package version
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package version $VERSION"
+            exit 1
+          fi
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint Firefox build
+        run: npm run lint:firefox
+
+      - name: Pack
+        run: node scripts/package.mjs
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: next-color-picker-${{ steps.package.outputs.version }}
+          path: artifacts/*.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      # Full history, so that the commits since the previous tag can be listed.
+      - uses: actions/checkout@v7
         with:
-          node-version: 22
+          fetch-depth: 0
 
-      - name: Read version
-        id: manifest
-        run: echo "version=$(jq -r .version manifest.json)" >> "$GITHUB_OUTPUT"
-
-      - name: Check tag against manifest
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          VERSION: ${{ steps.manifest.outputs.version }}
-        run: |
-          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match manifest version $VERSION"
-            exit 1
-          fi
-
-      - name: Minify
-        run: |
-          mkdir -p build
-          jq -c . manifest.json > build/manifest.json
-          cp -r icons LICENSE build/
-          for script in background.js picker.js; do
-            npx --yes terser@5.36.0 "$script" --compress --mangle --output "build/$script"
-          done
-
-      - name: Pack
-        env:
-          VERSION: ${{ steps.manifest.outputs.version }}
-        run: |
-          mkdir -p dist
-          cd build
-          zip -r -X -9 "../dist/next-color-picker-$VERSION.zip" .
-
-      - uses: actions/upload-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
-          name: next-color-picker-${{ steps.manifest.outputs.version }}
-          path: dist/*.zip
-          if-no-files-found: error
+          path: artifacts
+          merge-multiple: true
+
+      # Lists the commits since the previous tag, without the version bump
+      # commits made by `npm version`. GitHub's generated notes (merged pull
+      # requests and the full changelog link) are appended below.
+      - name: Write release notes
+        run: |
+          previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          range=${previous:+$previous..}$GITHUB_REF_NAME
+
+          {
+            echo '## Changes'
+            echo
+            git log "$range" --no-merges --invert-grep --grep='^Release v' --pretty='- %s (%h)'
+          } > release-notes.md
+          cat release-notes.md
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "$GITHUB_REF_NAME" --generate-notes
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/*.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            --generate-notes

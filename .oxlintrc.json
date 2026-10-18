@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true,
+    "webextensions": true
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "import/no-cycle": "error",
+    "typescript/consistent-type-imports": "error",
+    "promise/always-return": "off"
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "env": { "browser": false, "node": true },
+      "rules": { "no-await-in-loop": "off" }
+    },
+    {
+      "files": ["src/types/**/*.d.ts"],
+      "rules": { "no-var": "off" }
+    }
+  ],
+  "ignorePatterns": ["dist/**", "artifacts/**"]
+}

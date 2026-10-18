@@ -1,0 +1,92 @@
+/*
+ * Overlay styles, scoped to the picker's shadow root.
+ *
+ * --lens-size and --label-height are set from constants.ts, which also uses
+ * them for drawing and positioning.
+ */
+
+:host,
+* {
+  box-sizing: border-box;
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+  cursor: none;
+}
+
+.lens,
+.label {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  will-change: transform;
+}
+
+.lens {
+  width: var(--lens-size);
+  height: var(--lens-size);
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 4px rgba(0, 0, 0, 0.28),
+    0 10px 28px rgba(0, 0, 0, 0.32);
+}
+
+.lens canvas {
+  display: block;
+  width: var(--lens-size);
+  height: var(--lens-size);
+  border-radius: 50%;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: var(--label-height);
+  padding: 0 10px;
+  border-radius: calc(var(--label-height) / 2);
+  background: rgba(255, 255, 255, 0.97);
+  color: #18181b;
+  font:
+    600 12.5px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #000;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+.is-ready.has-pointer .lens,
+.is-ready.has-pointer .label {
+  opacity: 1;
+}
+
+.is-capturing .lens,
+.is-capturing .label {
+  visibility: hidden;
+}
+
+.is-fading .lens,
+.is-fading .label {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}

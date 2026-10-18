@@ -1,0 +1,46 @@
+{
+  "name": "next-color-picker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal color picker extension for Chrome and Firefox: a magnifier follows your cursor, click to copy the HEX.",
+  "author": "Bartosz Keller",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://bartoszkeller.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bartoszkeller/Next-Color-Picker.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:chrome": "node scripts/build.mjs --browser chrome",
+    "build:firefox": "node scripts/build.mjs --browser firefox",
+    "dev": "node scripts/build.mjs --watch",
+    "start:chrome": "web-ext run --target chromium --source-dir dist/chrome",
+    "start:firefox": "web-ext run --source-dir dist/firefox",
+    "typecheck": "tsc",
+    "lint": "oxlint --deny-warnings",
+    "lint:firefox": "web-ext lint --source-dir dist/firefox",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run lint:firefox",
+    "package": "npm run build && node scripts/package.mjs",
+    "preversion": "npm run check",
+    "postversion": "git push --follow-tags",
+    "clean": "node --eval \"for (const dir of ['dist', 'artifacts']) require('node:fs').rmSync(dir, { recursive: true, force: true })\""
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.5",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.88.0",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "web-ext": "^10.8.0"
+  },
+  "allowScripts": {
+    "esbuild": false
+  }
+}
