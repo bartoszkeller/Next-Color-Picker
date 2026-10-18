@@ -1,0 +1,42 @@
+/*
+ * Design tokens shared by the overlay and the toast, after the shadcn/ui zinc
+ * theme. Hex values instead of oklch(), which Chrome only supports from 111.
+ * Sizes are in px, as rem would follow the page's root font size.
+ */
+
+:host {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --destructive: #dc2626;
+  --ring-shadow: rgba(9, 9, 11, 0.12);
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.12);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --background: #09090b;
+    --foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --border: #27272a;
+    --destructive: #ef4444;
+    --ring-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+:host,
+* {
+  box-sizing: border-box;
+}

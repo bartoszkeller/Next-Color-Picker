@@ -12,7 +12,7 @@ export const MAX_RETRIES = 4;
 
 export const CONFIRM_DURATION = 520;
 export const FADE_DURATION = 200;
-export const LABEL_HEIGHT = 26;
+export const LABEL_HEIGHT = 30;
 export const LABEL_GAP = 10;
 export const EDGE_MARGIN = 6;
 

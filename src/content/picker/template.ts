@@ -1,5 +1,6 @@
 import { LABEL_HEIGHT, LENS_SIZE } from './constants';
 import pickerCss from './styles/picker.css';
+import themeCss from './styles/theme.css';
 import { createElement, createStyle } from './utils';
 
 /** Elements of the overlay that the picker updates. */
@@ -10,6 +11,7 @@ export interface PickerElements {
   label: HTMLDivElement;
   swatch: HTMLSpanElement;
   value: HTMLSpanElement;
+  badge: HTMLSpanElement;
 }
 
 /** Renders the overlay into the shadow root. */
@@ -18,11 +20,12 @@ export function renderPicker(root: ShadowRoot): PickerElements {
   const lens = createElement('div', 'lens', canvas);
   const swatch = createElement('span', 'swatch');
   const value = createElement('span', 'value');
-  const label = createElement('div', 'label', swatch, value);
+  const badge = createElement('span', 'badge');
+  const label = createElement('div', 'label', swatch, value, badge);
   const layer = createElement('div', 'layer', lens, label);
 
   const variables = `:host { --lens-size: ${LENS_SIZE}px; --label-height: ${LABEL_HEIGHT}px; }`;
-  root.append(createStyle(variables + pickerCss), layer);
+  root.append(createStyle(themeCss + variables + pickerCss), layer);
 
-  return { layer, lens, canvas, label, swatch, value };
+  return { layer, lens, canvas, label, swatch, value, badge };
 }

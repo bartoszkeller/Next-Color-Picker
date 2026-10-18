@@ -74,6 +74,7 @@ export class ColorPicker {
   private readonly label: HTMLElement;
   private readonly swatch: HTMLElement;
   private readonly valueNode: HTMLElement;
+  private readonly badge: HTMLElement;
   private readonly ctx: CanvasRenderingContext2D;
 
   constructor() {
@@ -86,6 +87,7 @@ export class ColorPicker {
     this.label = elements.label;
     this.swatch = elements.swatch;
     this.valueNode = elements.value;
+    this.badge = elements.badge;
     this.ctx = createLensContext(elements.canvas);
 
     appendToPage(this.host);
@@ -239,7 +241,7 @@ export class ColorPicker {
 
   private applyFormat(format: ColorFormat): void {
     this.format = format;
-    this.label.style.setProperty('--value-length', String(format.maxLength));
+    this.badge.textContent = format.name;
     this.renderValue();
     this.measureLabel();
     this.place();
@@ -427,7 +429,17 @@ export class ColorPicker {
   /** Shows the current color in the current format. */
   private renderValue(): void {
     const text = this.color ? this.format.format(this.color) : this.format.placeholder;
-    if (this.valueNode.textContent !== text) this.valueNode.textContent = text;
+    const previous = this.valueNode.textContent ?? '';
+    if (previous !== text) {
+      this.valueNode.textContent = text;
+
+      // The label fits its content. The value is monospaced, so its width
+      // only changes with its length, e.g. from rgb(9, 9, 9) to rgb(10, 9, 9).
+      if (previous.length !== text.length) {
+        this.measureLabel();
+        this.place();
+      }
+    }
 
     // Without a color, the swatch keeps showing the last one.
     if (this.color) this.swatch.style.background = toHex(this.color);
@@ -467,7 +479,7 @@ export class ColorPicker {
     // Show the confirmation in the label, then fade out the overlay.
     this.host.style.pointerEvents = 'none';
     this.layer.classList.add('is-copied');
-    this.valueNode.textContent = 'copied';
+    this.valueNode.textContent = 'Copied';
     this.measureLabel();
     this.place();
 

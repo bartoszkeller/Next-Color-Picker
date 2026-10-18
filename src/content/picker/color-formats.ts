@@ -10,8 +10,8 @@ export interface ColorFormat {
   id: string;
   /** Shown while no color is available. */
   placeholder: string;
-  /** Length of the longest possible value, so the label keeps its width. */
-  maxLength: number;
+  /** Shown in the label's badge. */
+  name: string;
   format(color: Rgb): string;
 }
 
@@ -19,19 +19,19 @@ export const COLOR_FORMATS: readonly ColorFormat[] = [
   {
     id: 'hex',
     placeholder: '#------',
-    maxLength: '#FFFFFF'.length,
+    name: 'HEX',
     format: toHex
   },
   {
     id: 'rgb',
     placeholder: 'rgb(---, ---, ---)',
-    maxLength: 'rgb(255, 255, 255)'.length,
+    name: 'RGB',
     format: ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`
   },
   {
     id: 'hsl',
     placeholder: 'hsl(---, ---%, ---%)',
-    maxLength: 'hsl(360, 100%, 100%)'.length,
+    name: 'HSL',
     format: (color) => {
       const { h, s, l } = toHsl(color);
       return `hsl(${h}, ${s}%, ${l}%)`;
@@ -40,7 +40,7 @@ export const COLOR_FORMATS: readonly ColorFormat[] = [
   {
     id: 'oklch',
     placeholder: 'oklch(---% ----- ---)',
-    maxLength: 'oklch(99.9% 0.322 359.9)'.length,
+    name: 'OKLCH',
     format: (color) => {
       const { l, c, h } = toOklch(color);
       return `oklch(${l}% ${c} ${h})`;
