@@ -6,6 +6,8 @@
  * --browser  Build a single browser; both are built by default.
  * --dev      Skip minification and add inline source maps.
  * --watch    Rebuild on changes; implies --dev.
+ * --screenshot  Keep the picker open when the page loses focus, and freeze
+ *            the lens with F, for taking screenshots of it.
  *
  * The manifest is src/manifest/base.json merged with src/manifest/<browser>.json,
  * with the version taken from package.json. The JavaScript target follows the
@@ -63,7 +65,8 @@ const { values: args } = parseArgs({
   options: {
     browser: { type: 'string' },
     dev: { type: 'boolean', default: false },
-    watch: { type: 'boolean', default: false }
+    watch: { type: 'boolean', default: false },
+    screenshot: { type: 'boolean', default: false }
   }
 });
 
@@ -141,6 +144,7 @@ function bundleOptions(browser, manifest) {
     format: 'iife',
     target: esbuildTarget(browser, manifest),
     minify: !dev,
+    define: { __SCREENSHOT_MODE__: String(args.screenshot) },
     sourcemap: dev ? 'inline' : false,
     legalComments: 'none',
     loader: { '.woff2': 'binary' },

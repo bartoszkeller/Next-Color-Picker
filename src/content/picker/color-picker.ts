@@ -78,6 +78,8 @@ export class ColorPicker {
   private refreshQueued = false;
   private generation = 0;
   private finished = false;
+  /** Screenshot mode only, see onKeyDown. */
+  private frozen = false;
 
   private readonly host: HTMLElement;
   private readonly layer: HTMLElement;
@@ -149,7 +151,7 @@ export class ColorPicker {
 
     bindings.push(
       [this.layer, 'mousemove', (event) => this.track(event as MouseEvent)],
-      [this.layer, 'mouseleave', () => this.setPointerInside(false)],
+      [this.layer, 'mouseleave', () => !__SCREENSHOT_MODE__ && this.setPointerInside(false)],
       [this.layer, 'mousedown', (event) => event.preventDefault()],
       [this.layer, 'wheel', (event) => this.onWheel(event as WheelEvent)],
       [
@@ -171,7 +173,8 @@ export class ColorPicker {
       [window, 'keydown', (event) => this.onKeyDown(event as KeyboardEvent)],
       [window, 'scroll', () => this.onScroll()],
       [window, 'resize', () => this.onResize()],
-      [window, 'blur', () => this.cancel()],
+      // Screenshot tools take the focus, so in screenshot mode the picker stays open.
+      [window, 'blur', () => !__SCREENSHOT_MODE__ && this.cancel()],
       // Leaving the page would otherwise keep the previewed color in the toolbar icon.
       [window, 'pagehide', () => this.cancel()]
     );
@@ -190,6 +193,14 @@ export class ColorPicker {
   }
 
   private onKeyDown(event: KeyboardEvent): void {
+    // Screenshot mode: F freezes the lens, so the cursor of a screenshot tool does not move it.
+    if (__SCREENSHOT_MODE__ && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.frozen = !this.frozen;
+      return;
+    }
+
     if (event.key !== 'Escape' && event.key !== 'Enter' && event.key !== ' ') return;
 
     event.preventDefault();
@@ -242,6 +253,8 @@ export class ColorPicker {
   }
 
   private track(event: MouseEvent): void {
+    if (this.frozen) return;
+
     this.pointer = { x: event.clientX, y: event.clientY };
     this.setPointerInside(true);
     this.draw();

@@ -17,7 +17,8 @@
     "prefer-const": "error",
     "import/no-cycle": "error",
     "typescript/consistent-type-imports": "error",
-    "promise/always-return": "off"
+    "promise/always-return": "off",
+    "no-underscore-dangle": ["warn", { "allow": ["__SCREENSHOT_MODE__"] }]
   },
   "overrides": [
     {
